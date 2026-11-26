@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Found Items · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/search" class="active">Search Items</a>
+    <a href="/report/found">Report Found</a>
+    <a href="/student/dashboard">My Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span th:if="${currentUser != null}" class="badge-role student">STUDENT</span>
+    <span th:if="${currentUser != null}" th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <!-- Condition 4: Search product name (e.g. earbuds, bottle, keys...) -->
+  <section class="search-header">
+    <span class="eyebrow">CAMPUS MYSTERY SEARCH</span>
+    <h1 style="font-size: 1.8rem; margin: 0.3rem 0 0.8rem;">Search Found Belongings</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.2rem;">
+      Search by product name (e.g., <strong>earbuds</strong>, <strong>bottle</strong>, <strong>calculator</strong>, <strong>keys</strong>, <strong>bag</strong>).
+      If you spot your item, solve the verification questions to claim it!
+    </p>
+
+    <form action="/search" method="get">
+      <div class="search-form-row">
+        <input type="text" name="q" th:value="${q}" placeholder="Type product name (e.g. earbuds, bottle, calculator, watch)..." autofocus>
+        <button type="submit" class="button primary">🔍 Search Products</button>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="filter-tabs">
+        <a th:href="@{/search(q=${q}, category='ALL')}" class="filter-tab" th:classappend="${category == 'ALL' ? 'active' : ''}">All Categories</a>
+        <a th:href="@{/search(q=${q}, category='Electronics')}" class="filter-tab" th:classappend="${category == 'Electronics' ? 'active' : ''}">⚡ Electronics</a>
+        <a th:href="@{/search(q=${q}, category='Bottles')}" class="filter-tab" th:classappend="${category == 'Bottles' ? 'active' : ''}">💧 Bottles</a>
+        <a th:href="@{/search(q=${q}, category='Stationery')}" class="filter-tab" th:classappend="${category == 'Stationery' ? 'active' : ''}">📚 Stationery</a>
+        <a th:href="@{/search(q=${q}, category='Bags')}" class="filter-tab" th:classappend="${category == 'Bags' ? 'active' : ''}">🎒 Bags</a>
+        <a th:href="@{/search(q=${q}, category='Accessories')}" class="filter-tab" th:classappend="${category == 'Accessories' ? 'active' : ''}">🔑 Accessories</a>
+      </div>
+    </form>
+  </section>
+
+  <!-- Results Grid -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>Matching Items Found on Campus</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;" th:text="${items.size() + ' item(s) available on board'}"></p>
+      </div>
+      <div>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">Haven't found it? </span>
+        <a href="/report/lost" style="color: var(--primary); font-weight: 600;">Submit a Lost Report →</a>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <article class="item-card" th:each="item : ${items}">
+        <div class="card-media mystery-blurred">
+          <img th:if="${item.imageName != null}" th:src="@{/uploads/{img}(img=${item.imageName})}" alt="Item image">
+          <div th:if="${item.imageName == null}" style="font-size: 3rem;">📦</div>
+          <div class="mystery-overlay">
+            <span>🔒 Confidential Item<br><small>Answer verification quiz to inspect</small></span>
+          </div>
+          <span class="item-badge-pill" th:text="${item.category}"></span>
+        </div>
+
+        <div class="card-content">
+          <h3 th:text="${item.name}"></h3>
+          <div class="item-meta">
+            <span class="meta-tag" th:text="'🎨 ' + ${item.colour}"></span>
+            <span class="meta-tag" th:text="'📏 ' + ${item.size}"></span>
+            <span class="meta-tag" th:text="${item.isElectronic ? '⚡ Electronic' : '📦 Non-electronic'}"></span>
+          </div>
+          <div class="item-location">
+            📍 <span th:text="${item.location}"></span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;" th:text="'Item Code: ' + ${item.itemCode}"></div>
+
+          <!-- Conditions 5 & 6: Claim button -->
+          <a th:href="@{/claim/{id}(id=${item.id})}" class="button primary full sm claim-btn">
+            Verify & Claim This Item →
+          </a>
+        </div>
+      </article>
+
+      <div th:if="${#lists.isEmpty(items)}" style="grid-column: 1 / -1; background: #fff; padding: 3rem; text-align: center; border-radius: var(--radius); border: 1px dashed var(--border);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🕵️‍♂️</div>
+        <h3>No matching found items found for "<span th:text="${q}"></span>"</h3>
+        <p style="color: var(--text-muted); margin: 0.5rem 0 1.5rem;">
+          Don't worry! Register your lost item report and the campus system will alert you when someone finds it.
+        </p>
+        <a href="/report/lost" class="button secondary">Report What You Lost →</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Keeping campus belongings secure & verified.
+</footer>
+
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

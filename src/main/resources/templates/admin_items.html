@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Items · Campus Mystery Finder Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+    th, td { padding: 0.9rem 1rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    th { background: #f8fafc; font-weight: 700; color: #475569; }
+    tr:hover { background: #f8fafc; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon" style="background: #0f172a;">🛡️</div>
+    <span>Campus Mystery Finder · Admin Control</span>
+  </a>
+  <div class="nav-links">
+    <a href="/admin/dashboard">Review Claims</a>
+    <a href="/admin/items" class="active">Manage Items</a>
+    <a href="/admin/claims">Claims History</a>
+    <a href="/">Student View ↗</a>
+  </div>
+  <div class="nav-user">
+    <span class="badge-role admin">ADMIN</span>
+    <span th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow" style="background: #fef3c7; color: #b45309;">INVENTORY MANAGEMENT</span>
+      <h1>All Campus Belongings</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Manage status and review all lost and found listings</p>
+    </div>
+    <a href="/report/found" class="button primary sm">+ Add Found Item</a>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Type</th>
+          <th>Item Name</th>
+          <th>Colour & Size</th>
+          <th>Electronic</th>
+          <th>Campus Location</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${items}">
+          <td><code th:text="${item.itemCode}"></code></td>
+          <td>
+            <span class="meta-tag" th:text="${item.reportType}" style="font-weight: 700;"></span>
+          </td>
+          <td>
+            <strong th:text="${item.name}"></strong><br>
+            <small style="color: var(--text-muted);" th:text="${item.category}"></small>
+          </td>
+          <td th:text="${item.colour + ' · ' + item.size}"></td>
+          <td th:text="${item.isElectronic ? '⚡ Yes' : 'No'}"></td>
+          <td th:text="${item.location}"></td>
+          <td>
+            <span class="status-pill" th:classappend="${#strings.toLowerCase(item.status)}" th:text="${item.status}"></span>
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <!-- Toggle status form -->
+              <form th:action="@{/admin/items/{id}/status(id=${item.id})}" method="post">
+                <select name="status" onchange="this.form.submit()" style="padding: 0.25rem 0.5rem; font-size: 0.78rem;">
+                  <option value="OPEN" th:selected="${item.status == 'OPEN'}">OPEN</option>
+                  <option value="CLAIMED" th:selected="${item.status == 'CLAIMED'}">CLAIMED</option>
+                  <option value="RESOLVED" th:selected="${item.status == 'RESOLVED'}">RESOLVED</option>
+                </select>
+              </form>
+              <!-- Delete form -->
+              <form th:action="@{/admin/items/{id}/delete(id=${item.id})}" method="post">
+                <button type="submit" class="button danger sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="return confirm('Delete this item record?');">🗑️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Administrative Control Center
+</footer>
+
+</body>
+</html>

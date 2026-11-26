@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claims History · Campus Mystery Finder Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+    th, td { padding: 0.9rem 1rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    th { background: #f8fafc; font-weight: 700; color: #475569; }
+    tr:hover { background: #f8fafc; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon" style="background: #0f172a;">🛡️</div>
+    <span>Campus Mystery Finder · Admin Control</span>
+  </a>
+  <div class="nav-links">
+    <a href="/admin/dashboard">Review Claims</a>
+    <a href="/admin/items">Manage Items</a>
+    <a href="/admin/claims" class="active">Claims History</a>
+    <a href="/">Student View ↗</a>
+  </div>
+  <div class="nav-user">
+    <span class="badge-role admin">ADMIN</span>
+    <span th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow" style="background: #fef3c7; color: #b45309;">AUDIT TRAIL</span>
+      <h1>Full Claims History</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Records of all approved, pending, and rejected ownership verification claims</p>
+    </div>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Claim Code</th>
+          <th>Item Claimed</th>
+          <th>Claimant</th>
+          <th>Match Score</th>
+          <th>Status</th>
+          <th>Pass Code</th>
+          <th>Admin Remarks</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="c : ${allClaims}">
+          <td><code th:text="${c.claimCode}"></code></td>
+          <td><strong th:text="${c.itemName}"></strong></td>
+          <td th:text="${c.claimantEmail}"></td>
+          <td>
+            <span class="match-badge"
+                  th:classappend="${c.matchScore >= 75 ? 'high' : (c.matchScore >= 45 ? 'mod' : 'low')}"
+                  th:text="${c.matchScore + '%'}">
+            </span>
+          </td>
+          <td>
+            <span class="status-pill" th:classappend="${#strings.toLowerCase(c.status)}" th:text="${c.status}"></span>
+          </td>
+          <td>
+            <strong th:if="${c.claimPassCode != null}" style="color: #0284c7; font-family: monospace;" th:text="${c.claimPassCode}"></strong>
+            <span th:if="${c.claimPassCode == null}" style="color: var(--text-muted);">-</span>
+          </td>
+          <td style="max-width: 250px; font-size: 0.82rem; color: var(--text-muted);" th:text="${c.adminRemarks}"></td>
+          <td th:text="${#temporals.format(c.createdAt, 'dd MMM yyyy, hh:mm a')}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Administrative Control Center
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Found Item · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/search">Search Items</a>
+    <a href="/student/dashboard">My Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span th:if="${currentUser != null}" class="badge-role student">STUDENT</span>
+    <span th:if="${currentUser != null}" th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <div class="form-wrap">
+    <a href="/" class="back-link">← Back to Options</a>
+    <span class="eyebrow">GOOD SAMARITAN PORTAL</span>
+    <h1>Report an Object Found on Campus</h1>
+    <p class="subtitle">Please provide accurate physical details and take a photo. This helps our matching engine verify the rightful owner.</p>
+
+    <form th:action="@{/report/found}" th:object="${item}" method="post" enctype="multipart/form-data">
+
+      <!-- Condition 2: Camera access & Gallery Media Import -->
+      <label>Photo of Found Object <span class="req">*</span>
+        <small>Take a live camera picture or choose an image from your device gallery</small>
+      </label>
+      <div class="media-box">
+        <div class="media-actions">
+          <button type="button" class="button primary sm" id="openCameraBtn">
+            📷 Open Device Camera
+          </button>
+          <label for="imageInput" class="button outline sm" style="margin: 0; cursor: pointer;">
+            🖼️ Choose from Gallery / Files
+          </label>
+          <input type="file" id="imageInput" name="image" accept="image/*" capture="environment" style="display: none;">
+          <button type="button" class="button outline sm" id="retakePhotoBtn" style="display: none;">
+            🔄 Retake Photo
+          </button>
+        </div>
+
+        <!-- Live Camera Viewfinder -->
+        <div class="camera-viewfinder" id="cameraViewfinder" style="display: none;">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <div class="viewfinder-controls">
+            <button type="button" class="snap-btn" id="snapPhotoBtn" title="Capture Snapshot">📸</button>
+            <button type="button" class="button danger sm" id="closeCameraBtn">Cancel</button>
+          </div>
+        </div>
+
+        <canvas id="cameraCanvas" style="display: none;"></canvas>
+        <input type="hidden" id="cameraData" name="cameraData">
+
+        <!-- Captured/Selected Image Preview -->
+        <div>
+          <img id="imagePreview" class="camera-preview-img" alt="Captured preview" style="display: none;">
+        </div>
+      </div>
+
+      <!-- Item Name / Product Name -->
+      <label for="name">Product / Item Name <span class="req">*</span>
+        <small>e.g. Wireless Earbuds, Stainless Steel Water Bottle, Calculator, Backpack, Watch</small>
+      </label>
+      <input type="text" id="name" th:field="*{name}" required placeholder="e.g. Black Wireless Earbuds">
+
+      <!-- Condition 3: Where it is found -->
+      <label for="location">Where was it found on campus? <span class="req">*</span>
+        <small>Campus building, floor, room number, or landmark</small>
+      </label>
+      <input type="text" id="location" th:field="*{location}" required placeholder="e.g. Central Library 2nd Floor, Desk 14">
+
+      <!-- Condition 3: What colour is it -->
+      <div class="two-col">
+        <div>
+          <label for="colour">What colour is it? <span class="req">*</span>
+            <small>e.g. Matte Black, Navy Blue, Silver</small>
+          </label>
+          <input type="text" id="colour" th:field="*{colour}" required placeholder="e.g. Matte Black">
+        </div>
+
+        <!-- Condition 3: Is it small or big -->
+        <div>
+          <label>Is it small or big? <span class="req">*</span>
+            <small>General size classification</small>
+          </label>
+          <div class="chip-group">
+            <div class="chip-option">
+              <input type="radio" id="sizeSmall" th:field="*{size}" value="Small" required checked>
+              <label for="sizeSmall">Small (Handheld/Pocket)</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" id="sizeMedium" th:field="*{size}" value="Medium">
+              <label for="sizeMedium">Medium (Bag/Desk)</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" id="sizeBig" th:field="*{size}" value="Big">
+              <label for="sizeBig">Big (Backpack/Bulky)</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Condition 3: Is it electronic or what -->
+      <label>Is it electronic or what? <span class="req">*</span>
+        <small>Specify if this object is an electronic device or non-electronic</small>
+      </label>
+      <div class="chip-group">
+        <div class="chip-option">
+          <input type="radio" id="elecYes" th:field="*{isElectronic}" value="true" required>
+          <label for="elecYes">⚡ Yes, it is Electronic</label>
+        </div>
+        <div class="chip-option">
+          <input type="radio" id="elecNo" th:field="*{isElectronic}" value="false" checked>
+          <label for="elecNo">📦 Non-Electronic Object</label>
+        </div>
+      </div>
+
+      <!-- Category & Brand -->
+      <div class="two-col" style="margin-top: 1rem;">
+        <div>
+          <label for="category">Object Category <span class="req">*</span></label>
+          <select id="category" th:field="*{category}" required>
+            <option value="">Select Category</option>
+            <option value="Electronics">Electronics & Gadgets</option>
+            <option value="Bottles">Bottles & Flasks</option>
+            <option value="Stationery">Stationery, Calculators & Books</option>
+            <option value="Bags">Bags, Wallets & Pouches</option>
+            <option value="Accessories">Keys, ID Cards & Accessories</option>
+            <option value="Clothing">Clothing & Wearables</option>
+            <option value="Other">Other Items</option>
+          </select>
+        </div>
+        <div>
+          <label for="brand">Brand / Model (Optional)
+            <small>e.g. Apple, Boat, Milton, Casio</small>
+          </label>
+          <input type="text" id="brand" th:field="*{brand}" placeholder="e.g. Boat">
+        </div>
+      </div>
+
+      <!-- Condition 6: Anti-Fraud Mystery Secret Clue -->
+      <div class="secret-box">
+        <h4>🔒 Secret Mystery Clue (Hidden from Public View)</h4>
+        <p>To ensure <strong>the right person gets their thing, not just anyone</strong> (Condition 6), describe a secret detail only the genuine owner would know (e.g. stickers, initials engraved, specific scratches, lockscreen, or pouch contents). This will be used to quiz claimants!</p>
+        <textarea th:field="*{secretClue}" rows="3" placeholder="e.g. Yellow smiley sticker on the case, small scratch on right bud, or engraved initials 'A.K.'"></textarea>
+      </div>
+
+      <!-- Public description -->
+      <label for="description">General Description (Public)
+        <small>General summary visible to campus students</small>
+      </label>
+      <textarea id="description" th:field="*{description}" rows="3" placeholder="Found on table after evening lecture. Clean and intact."></textarea>
+
+      <button type="submit" class="button primary full" style="margin-top: 2rem;">
+        🚀 Publish to Campus Mystery Board
+      </button>
+    </form>
+  </div>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Keeping campus belongings secure & verified.
+</footer>
+
+<script th:src="@{/js/camera.js}"></script>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

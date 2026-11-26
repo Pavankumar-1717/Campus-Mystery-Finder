@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ownership Verification Quiz · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .mystery-teaser-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.2rem;
+      margin-bottom: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .teaser-icon {
+      width: 48px;
+      height: 48px;
+      background: #e2e8f0;
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+    }
+    .verification-notice {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 1.8rem;
+      font-size: 0.88rem;
+      color: #1e40af;
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/search">← Back to Search</a>
+    <a href="/student/dashboard">My Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span th:if="${currentUser != null}" class="badge-role student">STUDENT</span>
+    <span th:if="${currentUser != null}" th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <div class="form-wrap">
+    <a href="/search" class="back-link">← Cancel and return to search</a>
+    <span class="eyebrow">CONDITIONS 5 & 6 · ANTI-FRAUD VERIFICATION</span>
+    <h1>Claim & Verify Your Belonging</h1>
+    <p class="subtitle">
+      To make sure <strong>the right person gets their thing, not just anyone</strong> (Condition 6), please answer the mystery questions about what you lost.
+    </p>
+
+    <!-- Target Item Teaser -->
+    <div class="mystery-teaser-card">
+      <div class="teaser-icon">🔒</div>
+      <div>
+        <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">Found Item Reference</div>
+        <h3 th:text="${item.name}" style="font-size: 1.2rem; margin: 0;"></h3>
+        <small style="color: var(--text-muted);" th:text="'Code: ' + ${item.itemCode} + ' · Category: ' + ${item.category}"></small>
+      </div>
+    </div>
+
+    <div class="verification-notice">
+      🛡️ <strong>Anti-Fraud Protection:</strong> Your answers will be compared by our intelligent Java scoring algorithm against the finder's confidential record. An administrator will review high-confidence matches and grant your Official Pickup Pass Code.
+    </div>
+
+    <!-- Verification Questionnaire (Condition 5) -->
+    <form th:action="@{/claim/{id}(id=${item.id})}" th:object="${claim}" method="post" enctype="multipart/form-data">
+
+      <!-- Question 1: Where was it lost -->
+      <label for="claimLocation">1. Where did you lose your item on campus? <span class="req">*</span>
+        <small>Specify building, room, cafeteria table, or sports ground</small>
+      </label>
+      <input type="text" id="claimLocation" th:field="*{claimLocation}" required placeholder="e.g. 2nd floor library near table 14">
+
+      <!-- Question 2: What colour is it -->
+      <div class="two-col">
+        <div>
+          <label for="claimColour">2. What colour is it? <span class="req">*</span>
+            <small>e.g. Matte Black, Navy, Silver, Red</small>
+          </label>
+          <input type="text" id="claimColour" th:field="*{claimColour}" required placeholder="e.g. Matte Black">
+        </div>
+
+        <!-- Question 3: Is it small or big -->
+        <div>
+          <label>3. Is it small or big? <span class="req">*</span>
+            <small>Size classification of the lost object</small>
+          </label>
+          <div class="chip-group">
+            <div class="chip-option">
+              <input type="radio" id="cSmall" th:field="*{claimSize}" value="Small" required checked>
+              <label for="cSmall">Small (Handheld)</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" id="cMed" th:field="*{claimSize}" value="Medium">
+              <label for="cMed">Medium</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" id="cBig" th:field="*{claimSize}" value="Big">
+              <label for="cBig">Big</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question 4: Is it electronic or what -->
+      <label>4. Is it electronic or what? <span class="req">*</span>
+        <small>Indicate whether the object has electronics / battery</small>
+      </label>
+      <div class="chip-group">
+        <div class="chip-option">
+          <input type="radio" id="cElecYes" th:field="*{claimIsElectronic}" value="true" required>
+          <label for="cElecYes">⚡ Yes, it is Electronic</label>
+        </div>
+        <div class="chip-option">
+          <input type="radio" id="cElecNo" th:field="*{claimIsElectronic}" value="false" checked>
+          <label for="cElecNo">📦 Non-Electronic</label>
+        </div>
+      </div>
+
+      <!-- Question 5: Brand / Manufacturer -->
+      <label for="claimBrand" style="margin-top: 1.2rem;">5. What brand or manufacturer is it?
+        <small>e.g. Apple, Boat, Milton, Casio, Wildcraft, Samsung</small>
+      </label>
+      <input type="text" id="claimBrand" th:field="*{claimBrand}" placeholder="e.g. Boat">
+
+      <!-- Question 6: Unique Secret Identification / Markings (Condition 6) -->
+      <div class="secret-box">
+        <h4>🔍 6. Specific Secret Clues & Unique Identifiers</h4>
+        <p>
+          Describe unique features known only to you as the genuine owner (e.g., specific scratches, stickers, engravings, serial number, lockscreen wallpaper, case details, or pouch contents):
+        </p>
+        <textarea th:field="*{secretAnswer}" rows="3" required placeholder="e.g. There is a yellow smiley sticker on the back of the case and a tiny dent near the charging port."></textarea>
+      </div>
+
+      <!-- Contact details -->
+      <div class="two-col" style="margin-top: 1rem;">
+        <div>
+          <label for="claimantName">Your Full Name <span class="req">*</span></label>
+          <input type="text" id="claimantName" th:field="*{claimantName}" required placeholder="Your Name">
+        </div>
+        <div>
+          <label for="claimantPhone">Contact Phone Number (Optional)</label>
+          <input type="text" id="claimantPhone" th:field="*{claimantPhone}" placeholder="+91 98765 43210">
+        </div>
+      </div>
+
+      <!-- Optional Proof Upload -->
+      <label for="proofImage" style="margin-top: 1.2rem;">Optional Proof of Ownership
+        <small>Upload receipt, previous photo of you with the item, or box photo (JPEG, PNG)</small>
+      </label>
+      <input type="file" id="proofImage" name="proofImage" accept="image/*">
+
+      <button type="submit" class="button primary full" style="margin-top: 2rem;">
+        ✅ Submit Verification Answers for Review
+      </button>
+    </form>
+  </div>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Anti-Fraud Verification System
+</footer>
+
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

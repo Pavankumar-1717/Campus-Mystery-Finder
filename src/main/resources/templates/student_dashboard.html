@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .claim-track-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+      box-shadow: var(--shadow-sm);
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/search">Search Items</a>
+    <a href="/report/found">Report Found</a>
+    <a href="/student/dashboard" class="active">My Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span class="badge-role student">STUDENT</span>
+    <span th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <div class="section-head" style="margin-bottom: 2rem;">
+    <div>
+      <span class="eyebrow">STUDENT PORTAL</span>
+      <h1 th:text="'Welcome, ' + ${currentUser.fullName}"></h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Track your verification claims and view your reported belongings.</p>
+    </div>
+    <div style="display: flex; gap: 0.8rem;">
+      <a href="/report/found" class="button primary sm">📷 Report Found</a>
+      <a href="/search" class="button secondary sm">🔍 Search Items</a>
+    </div>
+  </div>
+
+  <!-- 1. Claims Tracking Section (Conditions 5 & 6) -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>My Verification Claims</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Track items you claimed through the mystery verification process</p>
+      </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(myClaims)}" style="background: #fff; padding: 2.5rem; text-align: center; border-radius: var(--radius); border: 1px dashed var(--border);">
+      <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📋</div>
+      <h3>You haven't submitted any claims yet</h3>
+      <p style="color: var(--text-muted); margin: 0.4rem 0 1.2rem;">If you lost something on campus, search the board and answer the verification quiz.</p>
+      <a href="/search" class="button primary sm">Search Found Belongings →</a>
+    </div>
+
+    <div th:each="claim : ${myClaims}" class="claim-track-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.8rem;">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;" th:text="'Claim ID: ' + ${claim.claimCode}"></span>
+          <h3 th:text="${claim.itemName}" style="font-size: 1.25rem; margin: 0.2rem 0;"></h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">
+            <span>Submitted on: </span><span th:text="${#temporals.format(claim.createdAt, 'dd MMM yyyy, hh:mm a')}"></span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <!-- Match Score Badge -->
+          <span class="match-badge"
+                th:classappend="${claim.matchScore >= 75 ? 'high' : (claim.matchScore >= 45 ? 'mod' : 'low')}"
+                th:text="${claim.matchScore + '% Match Score'}">
+          </span>
+
+          <!-- Status Pill -->
+          <span class="status-pill"
+                th:classappend="${#strings.toLowerCase(claim.status)}"
+                th:text="${claim.status}">
+          </span>
+        </div>
+      </div>
+
+      <!-- Approved Pass Code Box -->
+      <div th:if="${claim.status == 'APPROVED'}" class="pass-card">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8; text-transform: uppercase;">Official Campus Verification Pass</div>
+        <div style="font-size: 0.95rem; margin-top: 0.3rem;">Present this code to the campus authority to retrieve your item:</div>
+        <div class="pass-code-val" th:text="${claim.claimPassCode}"></div>
+        <div style="font-size: 0.88rem; color: #94a3b8;" th:text="${claim.adminRemarks}"></div>
+      </div>
+
+      <!-- Pending Notification -->
+      <div th:if="${claim.status == 'PENDING'}" style="margin-top: 1rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 0.8rem; font-size: 0.88rem; color: #92400e;">
+        ⏳ <strong>Under Authority Review:</strong> Your answers have been recorded with a <strong><span th:text="${claim.matchScore + '%'}"></span> match score</strong>. The campus administrator is reviewing your details against the physical item.
+      </div>
+
+      <!-- Rejected Notification -->
+      <div th:if="${claim.status == 'REJECTED'}" style="margin-top: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.8rem; font-size: 0.88rem; color: #991b1b;">
+        ❌ <strong>Claim Not Approved:</strong> <span th:text="${claim.adminRemarks}"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. My Reported Items -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>My Reported Items</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Belongings you reported as found or lost</p>
+      </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(myItems)}" style="background: #fff; padding: 2rem; text-align: center; border-radius: var(--radius); border: 1px dashed var(--border);">
+      <p style="color: var(--text-muted);">You have not reported any lost or found items yet.</p>
+    </div>
+
+    <div class="cards-grid" th:if="${!#lists.isEmpty(myItems)}">
+      <article class="item-card" th:each="item : ${myItems}">
+        <div class="card-media">
+          <img th:if="${item.imageName != null}" th:src="@{/uploads/{img}(img=${item.imageName})}" alt="Item image">
+          <div th:if="${item.imageName == null}" style="font-size: 3rem;">📦</div>
+          <span class="item-badge-pill" th:text="${item.reportType}"></span>
+        </div>
+        <div class="card-content">
+          <h3 th:text="${item.name}"></h3>
+          <div class="item-meta">
+            <span class="meta-tag" th:text="'🎨 ' + ${item.colour}"></span>
+            <span class="meta-tag" th:text="'📏 ' + ${item.size}"></span>
+            <span class="status-pill" th:classappend="${#strings.toLowerCase(item.status)}" th:text="${item.status}"></span>
+          </div>
+          <div class="item-location" th:text="'📍 ' + ${item.location}"></div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);" th:text="'Code: ' + ${item.itemCode}"></div>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Keeping campus belongings secure & verified.
+</footer>
+
+</body>
+</html>

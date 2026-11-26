@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Report an item</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body><header class="topbar"><a class="brand" href="/">⌕ Campus Mystery Finder</a><nav><a href="/">Home</a><a href="/search">Search items</a></nav></header>
+<main class="form-wrap"><a href="/" class="back">← Back home</a><span class="eyebrow">CAMPUS COMMUNITY</span><h1 th:text="${type == 'FOUND' ? 'You found something!' : 'Let’s find your item.'}"></h1><p>Share a few details to help connect the right person with the right item.</p>
+<form th:action="@{/report/{type}(type=${#strings.toLowerCase(type)})}" th:object="${item}" method="post" enctype="multipart/form-data">
+<label>Item name *<input th:field="*{name}" required placeholder="e.g. Black wireless earbuds"></label>
+<div class="two"><label>Colour<input th:field="*{colour}" placeholder="Black"></label><label>Size<select th:field="*{size}"><option value="">Select size</option><option>Small</option><option>Medium</option><option>Large</option></select></label></div>
+<label>Category<select th:field="*{category}"><option value="">Choose category</option><option>Electronics</option><option>Stationery</option><option>Accessories</option><option>Documents</option><option>Clothing</option><option>Other</option></select></label>
+<label th:text="${type == 'FOUND' ? 'Location where you found it' : 'Location where you lost it'}"></label><input th:field="*{location}" placeholder="Library, Block A, Canteen...">
+<label>Brand (optional)<input th:field="*{brand}" placeholder="Brand name"></label>
+<label>Additional description<textarea th:field="*{description}" rows="4" placeholder="Add details that may help identify the item. Do not include sensitive details publicly."></textarea></label>
+<label>Approximate date and time<input type="datetime-local" th:field="*{eventDate}"></label>
+<label>Item image (optional)<input type="file" name="image" accept="image/*" capture="environment" id="imageInput"></label><img id="preview" class="preview" alt="Image preview" hidden>
+<button class="button primary full" type="submit">Submit report</button></form></main>
+<script th:src="@{/js/script.js}"></script></body></html>

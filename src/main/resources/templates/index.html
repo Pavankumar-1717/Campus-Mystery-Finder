@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Mystery Finder · Did you lose or find something?</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/" class="active">Home</a>
+    <a href="/search">Search Items</a>
+    <a th:if="${currentUser != null && !currentUser.isAdmin()}" href="/student/dashboard">My Dashboard & Claims</a>
+    <a th:if="${currentUser != null && currentUser.isAdmin()}" href="/admin/dashboard" style="color: #b45309; font-weight: 700;">🛡️ Admin Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span th:if="${currentUser != null}" class="badge-role"
+          th:classappend="${currentUser.isAdmin() ? 'admin' : 'student'}"
+          th:text="${currentUser.isAdmin() ? 'ADMIN' : 'STUDENT'}">
+    </span>
+    <span th:if="${currentUser != null}" th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <!-- Condition 1: "did u lost or found something in campus" -->
+  <section class="hero">
+    <span class="eyebrow">CAMPUS COMMUNITY NETWORK</span>
+    <h1>Did you lose or find<br><em>something on campus?</em></h1>
+    <p>A smart, privacy-protected lost & found platform. Rightful owners verify secret clues to reclaim their belongings.</p>
+
+    <div class="choice-cards">
+      <!-- if found == Point 2 & 3 -->
+      <div class="choice-card found">
+        <div class="choice-icon">📷</div>
+        <h2>I Found Something</h2>
+        <p>Take a photo using your camera or import from device gallery. Share where it was found, colour, size, and electronic status.</p>
+        <a href="/report/found" class="button primary full">
+          Report Found Item & Camera →
+        </a>
+      </div>
+
+      <!-- if lost == Point 4 & 5 -->
+      <div class="choice-card lost">
+        <div class="choice-icon">🔎</div>
+        <h2>I Lost Something</h2>
+        <p>Search by product name (e.g. earbuds, bottle, calculator). Answer ownership mystery questions to safely claim your item.</p>
+        <a href="/search" class="button secondary full">
+          Search Products & Claim →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community Mystery Board -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">CAMPUS MYSTERY BOARD</span>
+        <h2>Recently Found on Campus</h2>
+      </div>
+      <a href="/search" style="color: var(--primary); font-weight: 600;">Browse All Items →</a>
+    </div>
+
+    <div class="cards-grid">
+      <article class="item-card" th:each="item : ${recentFound}">
+        <div class="card-media mystery-blurred">
+          <img th:if="${item.imageName != null}" th:src="@{/uploads/{img}(img=${item.imageName})}" alt="Item photo">
+          <div th:if="${item.imageName == null}" style="font-size: 3rem;">📦</div>
+          <div class="mystery-overlay">
+            <span>🔒 Confidential Item<br><small>Details masked for owner protection</small></span>
+          </div>
+          <span class="item-badge-pill" th:text="${item.category}"></span>
+        </div>
+
+        <div class="card-content">
+          <h3 th:text="${item.name}"></h3>
+          <div class="item-meta">
+            <span class="meta-tag" th:text="'🎨 ' + ${item.colour}"></span>
+            <span class="meta-tag" th:text="'📏 ' + ${item.size}"></span>
+            <span class="meta-tag" th:text="${item.isElectronic ? '⚡ Electronic' : '📦 Non-electronic'}"></span>
+          </div>
+          <div class="item-location">
+            📍 <span th:text="${item.location}"></span>
+          </div>
+          <a th:href="@{/claim/{id}(id=${item.id})}" class="button primary full sm claim-btn">
+            Verify & Claim This Item →
+          </a>
+        </div>
+      </article>
+
+      <p th:if="${#lists.isEmpty(recentFound)}" style="color: var(--text-muted); grid-column: 1 / -1; padding: 2rem; text-align: center; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
+        No found items reported recently. Be the first good Samaritan!
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Keeping campus belongings secure & verified.
+</footer>
+
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

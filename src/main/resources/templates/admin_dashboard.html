@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .claim-review-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon" style="background: #0f172a;">🛡️</div>
+    <span>Campus Mystery Finder · Admin Control</span>
+  </a>
+  <div class="nav-links">
+    <a href="/admin/dashboard" class="active">Review Claims</a>
+    <a href="/admin/items">Manage Items</a>
+    <a href="/admin/claims">Claims History</a>
+    <a href="/" target="_blank">Student View ↗</a>
+  </div>
+  <div class="nav-user">
+    <span class="badge-role admin">ADMIN</span>
+    <span th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <div class="section-head" style="margin-bottom: 1.5rem;">
+    <div>
+      <span class="eyebrow" style="background: #fef3c7; color: #b45309;">AUTHORITY CONTROL CENTER</span>
+      <h1>Admin Claims Verification Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Review claims side-by-side (Conditions 5 & 6). Compare claimant answers with finder's secret records to ensure <strong>the right person gets their item</strong>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Key Statistics -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" th:text="${pendingClaimsCount}" style="color: #f59e0b;"></div>
+      <div class="stat-label">Pending Verification Claims</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${totalFound}"></div>
+      <div class="stat-label">Total Found Items Reported</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${totalLost}"></div>
+      <div class="stat-label">Total Lost Reports Logged</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${claimedItems}" style="color: #10b981;"></div>
+      <div class="stat-label">Successfully Returned Items</div>
+    </div>
+  </div>
+
+  <!-- Claims Verification Queue -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>Pending Claims Verification Queue</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Examine claimant responses vs confidential finder notes</p>
+      </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(pendingClaims)}" style="background: #fff; padding: 3rem; text-align: center; border-radius: var(--radius); border: 1px dashed var(--border);">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎉</div>
+      <h3>All clear! No pending claims to verify</h3>
+      <p style="color: var(--text-muted); margin-top: 0.4rem;">When students search and answer the mystery verification quiz, their requests will appear here for authority authorization.</p>
+    </div>
+
+    <!-- Claim Card with Side-by-Side Comparison -->
+    <div th:each="claim : ${pendingClaims}" class="claim-review-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;" th:text="'Claim ' + ${claim.claimCode}"></span>
+          <h3 th:text="${claim.itemName}" style="font-size: 1.35rem; margin: 0.1rem 0;"></h3>
+          <span style="font-size: 0.85rem; color: var(--text-muted);" th:text="'Claimant: ' + ${claim.claimantName} + ' (' + ${claim.claimantEmail} + ')'"></span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">JAVA MATCH SCORE</div>
+            <span class="match-badge"
+                  th:classappend="${claim.matchScore >= 75 ? 'high' : (claim.matchScore >= 45 ? 'mod' : 'low')}"
+                  th:text="${claim.matchScore + '% Match'}">
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side-by-Side Comparison (Conditions 3 & 5 & 6) -->
+      <div class="comparison-grid" th:with="item=${itemMap.get(claim.itemId)}">
+        <!-- Left: Finder's Confidential Records -->
+        <div class="comp-side">
+          <h4 style="color: #2563eb;">📦 1. Finder's Confidential Record</h4>
+
+          <div class="comp-row">
+            <span class="label">Item Name:</span>
+            <span class="val" th:text="${item != null ? item.name : 'Unknown'}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Where Found (Campus):</span>
+            <span class="val" th:text="${item != null ? item.location : 'N/A'}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Colour:</span>
+            <span class="val" th:text="${item != null ? item.colour : 'N/A'}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Size:</span>
+            <span class="val" th:text="${item != null ? item.size : 'N/A'}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Is Electronic:</span>
+            <span class="val" th:text="${item != null ? (item.isElectronic ? 'Yes (Electronic)' : 'No') : 'N/A'}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Brand:</span>
+            <span class="val" th:text="${item != null && item.brand != null && !item.brand.isEmpty() ? item.brand : 'Not specified'}"></span>
+          </div>
+
+          <!-- Finder's Secret Clue -->
+          <div style="margin-top: 0.8rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 0.8rem;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #1e40af; text-transform: uppercase;">Finder's Secret Verification Clue:</div>
+            <div style="font-size: 0.9rem; font-weight: 600; color: #1e3a8a; margin-top: 0.2rem;" th:text="${item != null ? item.secretClue : 'No secret clue recorded'}"></div>
+          </div>
+
+          <!-- Unblurred Admin Photo Preview -->
+          <div th:if="${item != null && item.imageName != null}" style="margin-top: 0.8rem;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.3rem;">Unmasked Photo (Admin Only):</div>
+            <img th:src="@{/uploads/{img}(img=${item.imageName})}" alt="Item photo" style="max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          </div>
+        </div>
+
+        <!-- Right: Claimant's Submitted Answers -->
+        <div class="comp-side">
+          <h4 style="color: #d97706;">🕵️‍♂️ 2. Claimant's Verification Answers</h4>
+
+          <div class="comp-row">
+            <span class="label">Claimant Email:</span>
+            <span class="val" th:text="${claim.claimantEmail}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Where Lost:</span>
+            <span class="val" th:text="${claim.claimLocation}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Colour Claimed:</span>
+            <span class="val" th:text="${claim.claimColour}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Size Claimed:</span>
+            <span class="val" th:text="${claim.claimSize}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Is Electronic Claimed:</span>
+            <span class="val" th:text="${claim.claimIsElectronic ? 'Yes (Electronic)' : 'No'}"></span>
+          </div>
+          <div class="comp-row">
+            <span class="label">Brand Claimed:</span>
+            <span class="val" th:text="${claim.claimBrand != null && !claim.claimBrand.isEmpty() ? claim.claimBrand : 'Not specified'}"></span>
+          </div>
+
+          <!-- Claimant's Secret Answer -->
+          <div style="margin-top: 0.8rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 0.8rem;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #92400e; text-transform: uppercase;">Claimant's Secret Details Answer:</div>
+            <div style="font-size: 0.9rem; font-weight: 600; color: #78350f; margin-top: 0.2rem;" th:text="${claim.secretAnswer}"></div>
+          </div>
+
+          <!-- Proof Image if uploaded -->
+          <div th:if="${claim.proofImageName != null}" style="margin-top: 0.8rem;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.3rem;">Claimant's Uploaded Proof:</div>
+            <img th:src="@{/uploads/{img}(img=${claim.proofImageName})}" alt="Proof" style="max-width: 100%; max-height: 180px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Forms (Approve / Reject) -->
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end; flex-wrap: wrap;">
+        <!-- Reject Form -->
+        <form th:action="@{/admin/claim/{id}/reject(id=${claim.id})}" method="post" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+          <input type="text" name="adminRemarks" placeholder="Rejection reason..." style="width: 220px; padding: 0.45rem 0.7rem; font-size: 0.85rem;">
+          <button type="submit" class="button danger sm" onclick="return confirm('Are you sure you want to reject this claim?');">
+            ✕ Reject Claim
+          </button>
+        </form>
+
+        <!-- Approve Form -->
+        <form th:action="@{/admin/claim/{id}/approve(id=${claim.id})}" method="post" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+          <input type="text" name="pickupLocation" placeholder="Pickup desk (e.g. Admin Desk 4)" style="width: 240px; padding: 0.45rem 0.7rem; font-size: 0.85rem;" value="Campus Security Office, Desk 3">
+          <button type="submit" class="button success sm">
+            ✓ Approve Claim & Issue Pass Code
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Administrative Control Center
+</footer>
+
+</body>
+</html>

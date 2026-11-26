@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Item Mystery Teaser · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/search">← Back to Search</a>
+    <a href="/student/dashboard">My Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span th:if="${currentUser != null}" class="badge-role student">STUDENT</span>
+    <span th:if="${currentUser != null}" th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<main>
+  <div class="form-wrap" style="max-width: 600px;">
+    <a href="/search" class="back-link">← Back to search results</a>
+    <span class="eyebrow">MYSTERY ITEM CARD</span>
+    <h1 th:text="${item.name}"></h1>
+
+    <div style="margin: 1rem 0; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem;">
+      <p style="margin-bottom: 0.5rem;"><b>Item Reference:</b> <code th:text="${item.itemCode}"></code></p>
+      <p style="margin-bottom: 0.5rem;"><b>Category:</b> <span th:text="${item.category}"></span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Colour:</b> <span th:text="${item.colour}"></span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Size:</b> <span th:text="${item.size}"></span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Type:</b> <span th:text="${item.isElectronic ? '⚡ Electronic Device' : '📦 Non-Electronic'}"></span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Where Found:</b> <span th:text="${item.location}"></span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Description:</b> <span th:text="${item.description}"></span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Status:</b> <span class="status-pill" th:classappend="${#strings.toLowerCase(item.status)}" th:text="${item.status}"></span></p>
+    </div>
+
+    <!-- Security notice explaining Condition 6 -->
+    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: #92400e;">
+      🔒 <strong>Anti-Fraud Protection (Condition 6):</strong> Photos and unique identifying markings are deliberately hidden from public view so that <strong>only the genuine owner can claim this item</strong>. To verify ownership, answer the verification quiz!
+    </div>
+
+    <a th:href="@{/claim/{id}(id=${item.id})}" class="button primary full" style="font-size: 1.05rem;">
+      👉 Claim & Verify Ownership Now
+    </a>
+  </div>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder
+</footer>
+
+</body>
+</html>

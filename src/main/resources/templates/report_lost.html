@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Lost Item · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/search">Search Found Items</a>
+    <a href="/student/dashboard">My Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span th:if="${currentUser != null}" class="badge-role student">STUDENT</span>
+    <span th:if="${currentUser != null}" th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<div th:if="${success}" class="notice-bar success" th:text="${success}"></div>
+<div th:if="${error}" class="notice-bar error" th:text="${error}"></div>
+
+<main>
+  <div class="form-wrap">
+    <a href="/" class="back-link">← Back to Options</a>
+    <span class="eyebrow">LOST ITEM REGISTRATION</span>
+    <h1>Report Something You Lost</h1>
+    <p class="subtitle">Have you already checked the search board? If not, <a href="/search" style="color: var(--primary); font-weight: 600;">search found items first</a>! Otherwise, register your lost item below.</p>
+
+    <form th:action="@{/report/lost}" th:object="${item}" method="post" enctype="multipart/form-data">
+      <label for="name">Product Name *</label>
+      <input type="text" id="name" th:field="*{name}" required placeholder="e.g. Black Wireless Earbuds">
+
+      <label for="location">Where did you lose it? *</label>
+      <input type="text" id="location" th:field="*{location}" required placeholder="e.g. Near Library or Block A">
+
+      <div class="two-col">
+        <div>
+          <label for="colour">Colour *</label>
+          <input type="text" id="colour" th:field="*{colour}" required placeholder="e.g. Matte Black">
+        </div>
+        <div>
+          <label>Size *</label>
+          <div class="chip-group">
+            <div class="chip-option">
+              <input type="radio" id="sSmall" th:field="*{size}" value="Small" checked>
+              <label for="sSmall">Small</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" id="sMed" th:field="*{size}" value="Medium">
+              <label for="sMed">Medium</label>
+            </div>
+            <div class="chip-option">
+              <input type="radio" id="sBig" th:field="*{size}" value="Big">
+              <label for="sBig">Big</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <label>Is it electronic or what? *</label>
+      <div class="chip-group">
+        <div class="chip-option">
+          <input type="radio" id="lElecYes" th:field="*{isElectronic}" value="true">
+          <label for="lElecYes">⚡ Electronic</label>
+        </div>
+        <div class="chip-option">
+          <input type="radio" id="lElecNo" th:field="*{isElectronic}" value="false" checked>
+          <label for="lElecNo">📦 Non-Electronic</label>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-top: 1rem;">
+        <div>
+          <label for="cat">Category *</label>
+          <select id="cat" th:field="*{category}" required>
+            <option value="">Select Category</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Bottles">Bottles</option>
+            <option value="Stationery">Stationery</option>
+            <option value="Bags">Bags</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="brand">Brand</label>
+          <input type="text" id="brand" th:field="*{brand}" placeholder="e.g. Apple, Boat, Milton">
+        </div>
+      </div>
+
+      <label for="secretClue">Unique Markings / Secret Clues</label>
+      <textarea id="secretClue" th:field="*{secretClue}" rows="3" placeholder="Describe stickers, scratches, initials, or proof you have."></textarea>
+
+      <button type="submit" class="button secondary full" style="margin-top: 2rem;">
+        Register Lost Item Report
+      </button>
+    </form>
+  </div>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder
+</footer>
+
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>
