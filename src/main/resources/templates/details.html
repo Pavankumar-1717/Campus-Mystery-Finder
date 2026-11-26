@@ -33,17 +33,17 @@
     <div style="margin: 1rem 0; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem;">
       <p style="margin-bottom: 0.5rem;"><b>Item Reference:</b> <code th:text="${item.itemCode}"></code></p>
       <p style="margin-bottom: 0.5rem;"><b>Category:</b> <span th:text="${item.category}"></span></p>
-      <p style="margin-bottom: 0.5rem;"><b>Colour:</b> <span th:text="${item.colour}"></span></p>
-      <p style="margin-bottom: 0.5rem;"><b>Size:</b> <span th:text="${item.size}"></span></p>
-      <p style="margin-bottom: 0.5rem;"><b>Type:</b> <span th:text="${item.isElectronic ? '⚡ Electronic Device' : '📦 Non-Electronic'}"></span></p>
-      <p style="margin-bottom: 0.5rem;"><b>Where Found:</b> <span th:text="${item.location}"></span></p>
-      <p style="margin-bottom: 0.5rem;"><b>Description:</b> <span th:text="${item.description}"></span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Colour:</b> <span style="color: #b45309; font-style: italic; font-weight: 600;">🔒 Confidential (Hidden to verify owner)</span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Brand Name:</b> <span style="color: #b45309; font-style: italic; font-weight: 600;">🔒 Confidential (Hidden to verify owner)</span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Size:</b> <span style="color: #b45309; font-style: italic; font-weight: 600;">🔒 Confidential (Hidden to verify owner)</span></p>
+      <p style="margin-bottom: 0.5rem;"><b>Where Found on Campus:</b> <span style="color: #b45309; font-style: italic; font-weight: 600;">🔒 Confidential (Hidden to verify owner)</span></p>
       <p style="margin-bottom: 0.5rem;"><b>Status:</b> <span class="status-pill" th:classappend="${#strings.toLowerCase(item.status)}" th:text="${item.status}"></span></p>
     </div>
 
     <!-- Security notice explaining Condition 6 -->
-    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: #92400e;">
-      🔒 <strong>Anti-Fraud Protection (Condition 6):</strong> Photos and unique identifying markings are deliberately hidden from public view so that <strong>only the genuine owner can claim this item</strong>. To verify ownership, answer the verification quiz!
+    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: #92400e; line-height: 1.5;">
+      🔒 <strong>Anti-Fraud Mystery Shield:</strong><br>
+      Photos, colour, brand, size, and exact location are kept strictly confidential so that <strong>only the genuine owner can claim this item</strong>. To verify ownership and test your matching percentage, take the mystery verification quiz!
     </div>
 
     <a th:href="@{/claim/{id}(id=${item.id})}" class="button primary full" style="font-size: 1.05rem;">

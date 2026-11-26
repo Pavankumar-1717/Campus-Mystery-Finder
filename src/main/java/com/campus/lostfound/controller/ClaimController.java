@@ -53,7 +53,8 @@ public class ClaimController {
     }
 
     /**
-     * Processes claimant's verification answers, scores match, stores claim for admin
+     * Processes claimant's verification answers, scores match, stores claim for admin,
+     * and shows the immediate matching percentage result.
      */
     @PostMapping("/{itemId}")
     public String processClaim(@PathVariable Long itemId,
@@ -66,22 +67,46 @@ public class ClaimController {
 
         try {
             Claim savedClaim = claimService.submitClaim(claim, proofImage, itemId, currentUser.getEmail());
-            int score = savedClaim.getMatchScore();
-
-            String message;
-            if (score >= 75) {
-                message = "Verification submitted! High match score (" + score + "%). Your claim has been prioritized for admin approval.";
-            } else if (score >= 45) {
-                message = "Verification submitted! Moderate match score (" + score + "%). The administrator will review your answers against the object.";
-            } else {
-                message = "Verification submitted! Match score: " + score + "%. The administrator will review your answers.";
-            }
-
-            redirect.addFlashAttribute("success", message);
-            return "redirect:/student/dashboard";
+            return "redirect:/claim/result/" + savedClaim.getId();
         } catch (IllegalArgumentException | IOException ex) {
             redirect.addFlashAttribute("error", "Failed to submit claim: " + ex.getMessage());
             return "redirect:/claim/" + itemId;
         }
+    }
+
+    /**
+     * Displays the immediate matching percentage and verification verdict to the lost person.
+     */
+    @GetMapping("/result/{claimId}")
+    public String claimResult(@PathVariable Long claimId, Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null) return "redirect:/login";
+
+        Claim claim = claimService.findById(claimId).orElse(null);
+        if (claim == null) return "redirect:/search";
+
+        Item item = itemService.findById(claim.getItemId()).orElse(null);
+
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("claim", claim);
+        model.addAttribute("item", item);
+        model.addAttribute("matchScore", claim.getMatchScore());
+
+        String verdict;
+        String verdictColor;
+        if (claim.getMatchScore() >= 75) {
+            verdict = "High Match! High probability this is your belonging.";
+            verdictColor = "#059669";
+        } else if (claim.getMatchScore() >= 45) {
+            verdict = "Moderate Match. Some characteristics match the found item.";
+            verdictColor = "#d97706";
+        } else {
+            verdict = "Low Match. Several details do not match the item on record.";
+            verdictColor = "#dc2626";
+        }
+        model.addAttribute("verdict", verdict);
+        model.addAttribute("verdictColor", verdictColor);
+
+        return "claim_result";
     }
 }

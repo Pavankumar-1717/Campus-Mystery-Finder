@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verification Match Result · Campus Mystery Finder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .result-card {
+      max-width: 650px;
+      margin: 1.5rem auto 3rem;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .score-circle {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      margin: 1.5rem auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      border: 6px solid;
+    }
+    .score-number {
+      font-size: 2.6rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-top: 0.2rem;
+    }
+    .answers-summary {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      margin: 1.8rem 0;
+      text-align: left;
+    }
+    .answers-summary h4 {
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.8rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .summary-row .label { color: var(--text-muted); }
+    .summary-row .val { font-weight: 600; color: #0f172a; text-align: right; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <div class="brand-icon">⌕</div>
+    <span>Campus Mystery Finder</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/search">Search Items</a>
+    <a href="/student/dashboard">My Dashboard</a>
+  </div>
+  <div class="nav-user">
+    <span class="badge-role student">STUDENT</span>
+    <span th:text="${currentUser.email}" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <a href="/logout" class="button outline sm">Sign Out</a>
+  </div>
+</header>
+
+<main>
+  <div class="result-card">
+    <span class="eyebrow">VERIFICATION RESULT</span>
+    <h1 style="font-size: 1.8rem; margin: 0.4rem 0;" th:text="${claim.itemName}"></h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      Your answers have been analyzed by our Java matching engine.
+    </p>
+
+    <!-- Visual Score Circle -->
+    <div class="score-circle"
+         th:style="'border-color: ' + ${verdictColor} + '; color: ' + ${verdictColor} + '; background: ' + ${verdictColor} + '10;'">
+      <div class="score-number" th:text="${matchScore + '%'}"></div>
+      <div class="score-label">MATCH SCORE</div>
+    </div>
+
+    <!-- Verdict Banner -->
+    <div style="margin: 0 auto; max-width: 460px; font-weight: 700; font-size: 1.1rem;"
+         th:style="'color: ' + ${verdictColor} + ';'"
+         th:text="${verdict}">
+    </div>
+
+    <!-- Your Submitted Answers Summary -->
+    <div class="answers-summary">
+      <h4>📋 The Details You Provided (Confidential Verification)</h4>
+      <div class="summary-row">
+        <span class="label">Where you lost it:</span>
+        <span class="val" th:text="${claim.claimLocation}"></span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Colour:</span>
+        <span class="val" th:text="${claim.claimColour}"></span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Brand:</span>
+        <span class="val" th:text="${claim.claimBrand != null && !claim.claimBrand.isEmpty() ? claim.claimBrand : 'Not specified'}"></span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Size:</span>
+        <span class="val" th:text="${claim.claimSize}"></span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Electronic status:</span>
+        <span class="val" th:text="${claim.claimIsElectronic ? '⚡ Electronic Device' : '📦 Non-electronic'}"></span>
+      </div>
+      <div class="summary-row" th:if="${claim.secretAnswer != null}">
+        <span class="label">Unique markings given:</span>
+        <span class="val" th:text="${claim.secretAnswer}"></span>
+      </div>
+    </div>
+
+    <!-- Security Next Steps Notice -->
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 1rem; text-align: left; font-size: 0.88rem; color: #1e40af; margin-bottom: 1.8rem;">
+      🛡️ <strong>What happens next?</strong><br>
+      To make sure <strong>the right person gets their item</strong>, campus administrators will verify your answers against the item held at the campus office. Once approved, you will receive an <strong>Official Campus Pickup Pass Code</strong> in your student dashboard.
+    </div>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="/student/dashboard" class="button primary">
+        Go to My Dashboard & Track Status →
+      </a>
+      <a href="/search" class="button outline">
+        Search More Items
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Lost & Found – Campus Mystery Finder · Keeping campus belongings secure & verified.
+</footer>
+
+</body>
+</html>

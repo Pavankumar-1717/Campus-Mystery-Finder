@@ -27,52 +27,55 @@ public class MatchingEngineService {
     }
 
     /**
-     * Compares the claimant's answers with the found item's details.
-     * Evaluates:
-     * 1. Colour (20 pts)
-     * 2. Size (15 pts)
-     * 3. Electronic Type (15 pts)
-     * 4. Location Proximity (20 pts)
-     * 5. Brand (10 pts)
-     * 6. Secret Clue / Unique Markings (20 pts)
-     * Total possible score = 100 pts.
+     * Compares the claimant's answers with the found item's confidential details.
+     * Evaluates the 4 core confidential attributes requested:
+     * 1. Location (Where lost vs Where found) (25 pts)
+     * 2. Colour (20 pts)
+     * 3. Brand (20 pts)
+     * 4. Size (15 pts)
+     * 5. Electronic Status (10 pts)
+     * 6. Secret unique markings / clues (10 pts)
+     * Total = 100 points
      */
     public MatchBreakdown evaluateClaim(Claim claim, Item foundItem) {
         int score = 0;
         MatchBreakdown breakdown = new MatchBreakdown(0, "LOW");
 
-        // 1. Colour Matching (20 points max)
+        // 1. Location Proximity (25 points max)
+        int locationScore = evaluateLocation(claim.getClaimLocation(), foundItem.getLocation());
+        score += locationScore;
+        breakdown.getCategoryScores().put("Location Proximity", locationScore);
+        if (locationScore >= 15) breakdown.getMatchNotes().add("Location proximity confirmed near " + foundItem.getLocation() + ".");
+
+        // 2. Colour Matching (20 points max)
         int colourScore = evaluateColour(claim.getClaimColour(), foundItem.getColour());
         score += colourScore;
         breakdown.getCategoryScores().put("Colour Match", colourScore);
-        if (colourScore >= 15) breakdown.getMatchNotes().add("Color matched closely (" + foundItem.getColour() + ").");
+        if (colourScore >= 15) breakdown.getMatchNotes().add("Colour matched closely (" + foundItem.getColour() + ").");
 
-        // 2. Size Matching (15 points max)
+        // 3. Brand Matching (20 points max)
+        int brandScore = evaluateText(claim.getClaimBrand(), foundItem.getBrand(), 20);
+        score += brandScore;
+        breakdown.getCategoryScores().put("Brand Match", brandScore);
+        if (brandScore >= 15) breakdown.getMatchNotes().add("Brand identified accurately (" + foundItem.getBrand() + ").");
+
+        // 4. Size Matching (15 points max)
         int sizeScore = evaluateSize(claim.getClaimSize(), foundItem.getSize());
         score += sizeScore;
         breakdown.getCategoryScores().put("Size Match", sizeScore);
         if (sizeScore > 0) breakdown.getMatchNotes().add("Size classification aligned (" + foundItem.getSize() + ").");
 
-        // 3. Electronic Type Matching (15 points max)
+        // 5. Electronic Type Matching (10 points max)
         int electronicScore = evaluateElectronic(claim.getClaimIsElectronic(), foundItem.getIsElectronic());
         score += electronicScore;
         breakdown.getCategoryScores().put("Electronic Type", electronicScore);
         if (electronicScore > 0) breakdown.getMatchNotes().add("Electronic classification matched (" + (foundItem.getIsElectronic() ? "Electronic" : "Non-electronic") + ").");
 
-        // 4. Location Proximity (20 points max)
-        int locationScore = evaluateLocation(claim.getClaimLocation(), foundItem.getLocation());
-        score += locationScore;
-        breakdown.getCategoryScores().put("Location Proximity", locationScore);
-        if (locationScore >= 10) breakdown.getMatchNotes().add("Location proximity confirmed near " + foundItem.getLocation() + ".");
-
-        // 5. Brand Matching (10 points max)
-        int brandScore = evaluateText(claim.getClaimBrand(), foundItem.getBrand(), 10);
-        score += brandScore;
-        breakdown.getCategoryScores().put("Brand Match", brandScore);
-
-        // 6. Secret Clue / Unique Marks Verification (20 points max)
+        // 6. Secret Clue / Unique Marks Verification (10 points max)
         int secretScore = evaluateSecretClue(claim.getSecretAnswer(), foundItem.getSecretClue());
         score += secretScore;
+        breakdown.getCategoryScores().put("Secret Clues & Unique Marks", secretScore);
+        if (secretScore >= 6) breakdown.getMatchNotes().add("Secret unique marking confirmed!");
         breakdown.getCategoryScores().put("Secret Clues & Unique Marks", secretScore);
         if (secretScore >= 12) breakdown.getMatchNotes().add("Secret identifier/marking strongly confirmed!");
 

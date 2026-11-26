@@ -84,15 +84,16 @@
         </div>
 
         <div class="card-content">
+          <!-- Condition: ONLY object name is visible -->
           <h3 th:text="${item.name}"></h3>
-          <div class="item-meta">
-            <span class="meta-tag" th:text="'🎨 ' + ${item.colour}"></span>
-            <span class="meta-tag" th:text="'📏 ' + ${item.size}"></span>
-            <span class="meta-tag" th:text="${item.isElectronic ? '⚡ Electronic' : '📦 Non-electronic'}"></span>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;" th:text="'Mystery Reference: ' + ${item.itemCode}"></div>
+
+          <!-- Colour, brand, size, location kept confidential -->
+          <div style="margin: 0.5rem 0 1rem; font-size: 0.82rem; color: #92400e; background: #fffbeb; border: 1px dashed #fde68a; border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; line-height: 1.4;">
+            🔒 <strong>Confidential Item:</strong><br>
+            Colour, brand, size & location are hidden for owner protection. Answer the quiz to verify ownership!
           </div>
-          <div class="item-location">
-            📍 <span th:text="${item.location}"></span>
-          </div>
+
           <a th:href="@{/claim/{id}(id=${item.id})}" class="button primary full sm claim-btn">
             Verify & Claim This Item →
           </a>
